@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Pipeline Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 로그인 화면 -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>Data Pipeline Management System</h1>
+                <p>관리자 로그인이 필요합니다</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">사용자명</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="login-btn">로그인</button>
+            </form>
+            <div id="loginError" class="error-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- 메인 애플리케이션 -->
+    <div id="mainApp" class="main-app hidden">
+        <header class="app-header">
+            <div class="header-content">
+                <h1>Data Pipeline Management System</h1>
+                <div class="header-actions">
+                    <span class="user-info">관리자</span>
+                    <button id="logoutBtn" class="logout-btn">로그아웃</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+
+        <!-- 1. 파일 업로드 -->
+        <div class="card">
+            <div class="card-header">
+                <h2>데이터 파일 업로드</h2>
+                <p>CSV 형식의 데이터 파일을 업로드하여 분석을 시작합니다</p>
+            </div>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14,2 14,8 20,8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10,9 9,9 8,9"></polyline>
+                    </svg>
+                </div>
+                <p class="upload-text">CSV 파일을 드래그하거나 클릭해서 선택하세요</p>
+                <p class="upload-subtext">지원 형식: .csv (최대 100MB)</p>
+                <input type="file" id="fileInput" accept=".csv">
+            </div>
+        </div>
+
+        <!-- 2. 분석 결과 -->
+        <div class="card hidden" id="analysisSection">
+            <div class="card-header">
+                <h2>데이터 분석 결과</h2>
+                <p>업로드된 파일의 기본 정보와 컬럼별 분석 결과입니다</p>
+            </div>
+            <div id="basicInfo"></div>
+            <div id="columnAnalysis"></div>
+        </div>
+
+        <!-- 3. 전처리 설정 -->
+        <div class="card hidden" id="preprocessSection">
+            <div class="card-header">
+                <h2>데이터 전처리 설정</h2>
+                <p>결측값과 이상치에 대한 처리 방법을 설정합니다</p>
+            </div>
+            <div id="preprocessControls"></div>
+            <div class="action-buttons">
+                <button id="preprocessBtn" class="btn-primary">전처리 실행</button>
+            </div>
+        </div>
+
+        <!-- 4. 결과 -->
+        <div class="card hidden" id="resultSection">
+            <div class="card-header">
+                <h2>전처리 완료</h2>
+                <p>데이터 전처리가 성공적으로 완료되었습니다</p>
+            </div>
+            <div id="result"></div>
+        </div>
+
+        <!-- 5. DB 설정 -->
+        <div class="card hidden" id="dbSection">
+            <div class="card-header">
+                <h2>데이터베이스 설정</h2>
+                <p>전처리된 데이터를 데이터베이스에 저장합니다</p>
+            </div>
+            
+            <div class="column-control">
+                <label>DB 종류</label>
+                <select id="dbType" onchange="updateDbForm()">
+                    <option value="sqlite">SQLite (파일 기반)</option>
+                    <option value="postgresql">PostgreSQL</option>
+                    <option value="mysql">MySQL</option>
+                    <option value="mongodb">MongoDB</option>
+                </select>
+            </div>
+
+            <div id="sqliteForm">
+                <div class="column-control">
+                    <label>데이터베이스 파일명</label>
+                    <input type="text" id="sqliteDb" value="my_data.db">
+                </div>
+            </div>
+
+            <div id="remoteDbForm" class="hidden">
+                <div class="column-control">
+                    <label>Host</label>
+                    <input type="text" id="dbHost" value="localhost">
+                </div>
+                <div class="column-control">
+                    <label>Port</label>
+                    <input type="number" id="dbPort" value="5432">
+                </div>
+                <div class="column-control">
+                    <label>Username</label>
+                    <input type="text" id="dbUsername" value="postgres">
+                </div>
+                <div class="column-control">
+                    <label>Password</label>
+                    <input type="password" id="dbPassword">
+                </div>
+                <div class="column-control">
+                    <label>Database</label>
+                    <input type="text" id="dbDatabase" value="test_db">
+                </div>
+            </div>
+
+            <div class="column-control">
+                <label>테이블 이름</label>
+                <input type="text" id="tableName" value="products">
+            </div>
+
+            <div class="column-control">
+                <label>기존 테이블이 있다면?</label>
+                <select id="ifExists">
+                    <option value="replace">덮어쓰기</option>
+                    <option value="append">추가</option>
+                    <option value="fail">에러</option>
+                </select>
+            </div>
+
+            <div class="action-buttons">
+                <button onclick="exportToDb()" class="btn-primary">DB에 저장하기</button>
+                <button onclick="hideDbOptions()" class="btn-secondary">취소</button>
+            </div>
+        </div>
+
+        <!-- 로딩 -->
+        <div class="loading hidden" id="loading">
+            <div class="spinner"></div>
+            <p>처리 중...</p>
+        </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 파일들 -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
